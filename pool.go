@@ -3,7 +3,6 @@
 package gohbase
 
 import (
-	"errors"
 	"fmt"
 	"sync/atomic"
 	"time"
@@ -52,8 +51,8 @@ func (h *HBase) get(doNotNew bool) (*ThriftConn, error) {
 		}
 		if curUsed > h.MaxSize {
 			newUsed := h.subUsed()
-			return nil, errors.New(fmt.Sprintf("thriftpool empty, used:%d/%d, init:%d, max:%d",
-				curUsed, newUsed, h.InitSize, h.MaxSize))
+			return nil, fmt.Errorf("thriftpool empty, used:%d/%d, init:%d, max:%d",
+				curUsed, newUsed, h.InitSize, h.MaxSize)
 		}
 		var err error
 		var socket *thrift.TSocket
@@ -107,7 +106,7 @@ func (h *HBase) put(conn *ThriftConn, doNotNew bool) error {
 	}()
 
 	used := h.subUsed()
-	closed := atomic.LoadInt32(&h._closed)
+	closed := atomic.LoadUint32(&h._closed)
 	if closed == 1 {
 		if !conn.IsClose() {
 			_ = conn.Close()
@@ -130,7 +129,7 @@ func (h *HBase) put(conn *ThriftConn, doNotNew bool) error {
 	if idle > h.InitSize {
 		if nowTime > usedTime {
 			iTime := nowTime - usedTime
-			if iTime > int64(t.IdleTimeout) {
+			if iTime > int64(h.IdleTimeout) {
 				_ = conn.Close()
 				h.subIdle()
 				// 闲置连接，回收连接资源
@@ -150,7 +149,7 @@ func (h *HBase) put(conn *ThriftConn, doNotNew bool) error {
 	default:
 		_ = conn.Close()
 		h.subIdle()
-		return errors.New(fmt.Sprintf("use:%d, init:%d, idle:%d", used, h.InitSize, h.GetIdle()))
+		return fmt.Errorf("use:%d, init:%d, idle:%d", used, h.InitSize, h.GetIdle())
 	}
 }
 
@@ -160,7 +159,7 @@ func (h *HBase) GetAssessTime() int64 {
 
 // Close 关闭连接池（释放资源）
 func (h *HBase) Close() {
-	swp := atomic.CompareAndSwapInt32(&h._closed, 0, 1)
+	swp := atomic.CompareAndSwapUint32(&h._closed, 0, 1)
 	if !swp {
 		return
 	}
@@ -177,7 +176,7 @@ func (h *HBase) Close() {
 }
 
 func (h *HBase) closed() bool {
-	return atomic.LoadUint32(h._closed) == 1
+	return atomic.LoadUint32(&h._closed) == 1
 }
 
 func (h *HBase) reaper(frequency time.Duration) {
@@ -198,7 +197,7 @@ func (h *HBase) reaper(frequency time.Duration) {
 				if conn == nil {
 					break
 				}
-				err := g.put(conn, true)
+				err := h.put(conn, true)
 				if err != nil {
 					fmt.Printf("relase idle Conn failed:%s\n", err.Error())
 				}
