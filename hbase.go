@@ -162,6 +162,9 @@ type HBase interface {
 	// Parameters:
 	//  - Table
 	GetAllRegionLocations(table []byte) (r []*hbase.THRegionLocation, err error)
+
+	// Close HBase client
+	Close() (err error)
 }
 
 func NewHBase(opt *Options) HBase {
@@ -408,4 +411,8 @@ func (h *hBaseCMD) PutMultiple(table []byte, tputs []*hbase.TPut) (err error) {
 	hc := cn.GetHbaseClient()
 	err = hc.PutMultiple(table, tputs)
 	return
+}
+
+func (h *hBaseCMD) Close() error {
+	return h.thriftConnPool.Close()
 }
