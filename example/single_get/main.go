@@ -21,7 +21,7 @@ var (
 	idleTimeout = flag.Uint("idle_timeout", 5000, "Idle timeout in Millisecond.")
 	table       = flag.String("table", "", "HBase table.")
 	row         = flag.String("rowkey", "", "HBase row.")
-	columns     = flag.String("columns", "", "HBase colums. Format: 'cf1:q1,q2' or 'cf1:q1,cf2:q2'")
+	columns     = flag.String("columns", "", "HBase colums. Format: 'cf1:q1,q2' or 'cf1:q1,cf2:q2' or ''")
 )
 
 func main() {
@@ -95,8 +95,5 @@ func checkParams() bool {
 		fmt.Println("Parameter[-table] is not set.")
 		return false
 	}
-	// 验证一下空值时，能否查询到所有的列簇信息
-	// if *columns == "" {
-	// }
 	return true
 }
