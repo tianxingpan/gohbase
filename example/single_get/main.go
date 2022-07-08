@@ -64,11 +64,23 @@ func main() {
 		}
 	}
 
+	st := time.Now()
 	r, err := hb.Get([]byte(*table), &cm)
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Printf("result=%v", r)
+	l := 0
+	if r != nil {
+		l = 0
+	}
+	tc := time.Since(st)
+	fmt.Println("COLUMN\t\t\t\t\t\t\t\t\t\t\tCELL")
+	fmt.Printf("%d row(s)\n", l)
+	for _, cv := range r.ColumnValues {
+		fmt.Printf("%s\t%s\t%s", string(r.Row), string(cv.Family), string(cv.Qualifier))
+	}
+	fmt.Printf("%d row(s)\n", l)
+	fmt.Printf("Took %f seconds", tc.Seconds())
 }
 
 func checkParams() bool {
