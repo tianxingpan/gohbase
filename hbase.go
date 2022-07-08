@@ -1,6 +1,8 @@
 // Package gohbase provides a pool of hbase clients
 package gohbase
 
+import "github.com/tianxingpan/gohbase/hbase"
+
 type IHBase interface {
 	// Test for the existence of columns in the table, as specified in the TGet.
 	//
@@ -9,7 +11,7 @@ type IHBase interface {
 	// Parameters:
 	//  - Table: the table to check on
 	//  - Tget: the TGet to check for
-	Exists(table string) (r bool, err error)
+	Exists(table string, tget *hbase.TGet) (r bool, err error)
 	// Method for getting data from a row.
 	//
 	// If the row cannot be found an empty Result is returned.
@@ -20,7 +22,7 @@ type IHBase interface {
 	// Parameters:
 	//  - Table: the table to get from
 	//  - Tget: the TGet to fetch
-	Get(table string) (r string, err error)
+	Get(table string, tget *hbase.TGet) (r *hbase.TResult_, err error)
 	// Method for getting multiple rows.
 	//
 	// If a row cannot be found there will be a null
@@ -34,13 +36,13 @@ type IHBase interface {
 	//  - Tgets: a list of TGets to fetch, the Result list
 	// will have the Results at corresponding positions
 	// or null if there was an error
-	GetMultiple(table string) (r string, err error)
+	GetMultiple(table string, tgets []*hbase.TGet) (r []*hbase.TResult_, err error)
 	// Commit a TPut to a table.
 	//
 	// Parameters:
 	//  - Table: the table to put data in
 	//  - Tput: the TPut to put
-	Put(table string) (err error)
+	Put(table string, tput *hbase.TPut) (err error)
 	// Atomically checks if a row/family/qualifier value matches the expected
 	// value. If it does, it adds the TPut.
 	//
@@ -55,13 +57,13 @@ type IHBase interface {
 	// check is for the non-existence of the
 	// column in question
 	//  - Tput: the TPut to put if the check succeeds\
-	CheckAndPut(table string) (err error)
+	CheckAndPut(table, row, family, qualifier, value string, tput *hbase.TPut) (r bool, err error)
 	// Commit a List of Puts to the table.
 	//
 	// Parameters:
 	//  - Table: the table to put data in
 	//  - Tputs: a list of TPuts to commit
-	PutMultiple(table string) (err error)
+	PutMultiple(table string, tputs []*hbase.TPut) (err error)
 	// Deletes as specified by the TDelete.
 	//
 	// Note: "delete" is a reserved keyword and cannot be used in Thrift
@@ -70,7 +72,7 @@ type IHBase interface {
 	// Parameters:
 	//  - Table: the table to delete from
 	//  - Tdelete: the TDelete to delete
-	DeleteSingle(table string) (err error)
+	DeleteSingle(table string, tdelete *hbase.TDelete) (err error)
 	// Bulk commit a List of TDeletes to the table.
 	//
 	// Throws a TIOError if any of the deletes fail.
@@ -80,7 +82,7 @@ type IHBase interface {
 	// Parameters:
 	//  - Table: the table to delete from
 	//  - Tdeletes: list of TDeletes to delete
-	DeleteMultiple(table string) (err error)
+	DeleteMultiple(table string, tdeletes []*hbase.TDelete) (r []*hbase.TDelete, err error)
 	// Atomically checks if a row/family/qualifier value matches the expected
 	// value. If it does, it adds the delete.
 	//
@@ -95,15 +97,15 @@ type IHBase interface {
 	// check is for the non-existence of the
 	// column in question
 	//  - Tdelete: the TDelete to execute if the check succeeds
-	CheckAndDelete(table string) (err error)
+	CheckAndDelete(table, row, family, qualifier, value string, tdelete *hbase.TDelete) (r bool, err error)
 	// Parameters:
 	//  - Table: the table to increment the value on
 	//  - Tincrement: the TIncrement to increment
-	Increment(table string) (err error)
+	Increment(table string, tincrement *hbase.TIncrement) (r *hbase.TResult_, err error)
 	// Parameters:
 	//  - Table: the table to append the value on
 	//  - Tappend: the TAppend to append
-	Append(table string) (err error)
+	Append(table string, tappend *hbase.TAppend) (r *hbase.TResult_, err error)
 	// Get a Scanner for the provided TScan object.
 	//
 	// @return Scanner Id to be used with other scanner procedures
@@ -111,7 +113,7 @@ type IHBase interface {
 	// Parameters:
 	//  - Table: the table to get the Scanner for
 	//  - Tscan: the scan object to get a Scanner for
-	OpenScanner(table string) (err error)
+	OpenScanner(table string, tscan *hbase.TScan) (r int32, err error)
 	// Grabs multiple rows from a Scanner.
 	//
 	// @return Between zero and numRows TResults
@@ -119,7 +121,7 @@ type IHBase interface {
 	// Parameters:
 	//  - ScannerId: the Id of the Scanner to return rows from. This is an Id returned from the openScanner function.
 	//  - NumRows: number of rows to return
-	GetScannerRows(table string) (err error)
+	GetScannerRows(scannerId int32, numRows int32) (r []*hbase.TResult_, err error)
 	// Closes the scanner. Should be called to free server side resources timely.
 	// Typically close once the scanner is not needed anymore, i.e. after looping
 	// over it to get all the required rows.
@@ -132,7 +134,7 @@ type IHBase interface {
 	// Parameters:
 	//  - Table: table to apply the mutations
 	//  - TrowMutations: mutations to apply
-	MutateRow(table string) (err error)
+	MutateRow(table string, trowMutations *hbase.TRowMutations) (err error)
 	// Get results for the provided TScan object.
 	// This helper function opens a scanner, get the results and close the scanner.
 	//
@@ -142,7 +144,7 @@ type IHBase interface {
 	//  - Table: the table to get the Scanner for
 	//  - Tscan: the scan object to get a Scanner for
 	//  - NumRows: number of rows to return
-	GetScannerResults(table string) (r []*HResult, err error)
+	GetScannerResults(table string, tscan *hbase.TScan, numRows int32) (r []*HResult, err error)
 	// Given a table and a row get the location of the region that
 	// would contain the given row key.
 	//
