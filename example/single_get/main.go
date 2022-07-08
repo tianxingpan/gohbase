@@ -69,15 +69,15 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+	fmt.Println("COLUMN\t\t\t\t\t\t\t\t\t\t\tCELL")
 	l := 0
 	if r != nil {
-		l = 0
+		l = 1
+		for _, cv := range r.ColumnValues {
+			fmt.Printf("%s\tcolumn=%s:%s, timestamp=%d, value=%s\n", string(r.Row), string(cv.Family), string(cv.Qualifier), *cv.Timestamp, string(cv.Value))
+		}
 	}
 	tc := time.Since(st)
-	fmt.Println("COLUMN\t\t\t\t\t\t\t\t\t\t\tCELL")
-	for _, cv := range r.ColumnValues {
-		fmt.Printf("%s\t%s\t%s", string(r.Row), string(cv.Family), string(cv.Qualifier))
-	}
 	fmt.Printf("%d row(s)\n", l)
 	fmt.Printf("Took %f seconds\n", tc.Seconds())
 }
