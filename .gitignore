@@ -5,8 +5,11 @@
 *.so
 *.dylib
 
+.vscode/
+
 # Test binary, built with `go test -c`
 *.test
+example/single_get/single_get
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
