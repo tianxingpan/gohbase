@@ -36,7 +36,6 @@ func main() {
 	}
 	hb := gohbase.NewHBase(&gohbase.Options{
 		Addr:         *addr,
-		MaxRetries:   0,
 		DialTimeout:  time.Duration(*dialTimeout) * time.Millisecond,
 		IdleTimeout:  time.Duration(*idleTimeout) * time.Millisecond,
 		PoolSize:     *maxSize,
