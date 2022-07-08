@@ -69,7 +69,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Println("COLUMN\t\t\t\t\t\t\t\t\t\t\tCELL")
+	fmt.Println("COLUMN\t\t\t\t\t\t\t\tCELL")
 	l := 0
 	if r != nil {
 		l = 1
