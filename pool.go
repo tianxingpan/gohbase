@@ -366,6 +366,7 @@ func (tp *ThriftConnPool) Put(cn *ThriftConn) {
 	}
 
 	tp.poolMu.Lock()
+	_ = cn.UpdateUsedTime()
 	tp.idleConns = append(tp.idleConns, cn)
 	tp.idleConnsLen++
 	tp.poolMu.Unlock()

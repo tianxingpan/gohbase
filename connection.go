@@ -92,6 +92,7 @@ func NewThriftConn(endpoint string, dialTimeout time.Duration) (*ThriftConn, err
 		closed:     false,
 		socket:     socket,
 		createTime: time.Now(),
+		usedTime:   time.Now(),
 	}
 	return conn, nil
 }
